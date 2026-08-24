@@ -77,11 +77,11 @@
 			"title" : "edt_conf_monitor_order_title",
 			"default" : [],
 			"required" : true,
-			"uniqueItems" : true,
 			"items" :
 			{
 				"type" : "string",
 				"title" : "edt_conf_monitor_order_itemtitle",
+				"required" : true,
 				"allowEmptyArray" : true
 			},
 			"propertyOrder" : 26
