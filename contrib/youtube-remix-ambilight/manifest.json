@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "HyperHDR remix-only ambilight",
+  "version": "2.0",
+  "description": "Hook vao the <video> cua YouTube va bom pixel sang HyperHDR, chi khi dang phat nhac remix.",
+  "permissions": ["storage"],
+  "host_permissions": ["http://localhost:8090/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*", "*://music.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": { "default_title": "Bat/tat HyperHDR ambilight" }
+}
