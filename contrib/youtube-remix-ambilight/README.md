@@ -166,9 +166,9 @@ The service worker console (`edge://extensions` → *service worker*) carries `[
 
 | Symptom | Usual cause |
 |---|---|
-| `--- dang CHAN: ...` | The log names the condition that failed |
-| `canvas bi tainted` | A cross-origin progressive stream; pixels are unreadable |
-| No `instance N san sang` | HyperHDR is not running, or the port is wrong |
+| `--- BLOCKED: ...` | The log names the condition that failed |
+| `canvas is tainted` | A cross-origin progressive stream; pixels are unreadable |
+| No `instance N ready` | HyperHDR is not running, or the port is wrong |
 | Log says frames were sent but nothing changes | Wrong instance — check `TARGET_INSTANCES` |
 
 To confirm HyperHDR is receiving anything, independently of the extension:
@@ -191,6 +191,33 @@ is never throttled in background tabs, so it sidesteps this whole class of probl
 
 **YouTube only.** Add more sites by extending `matches` in `manifest.json`.
 
+## Files
+
+```
+manifest.json        MV3 manifest
+content.js           runs inside the YouTube page: gating + frame capture
+background.js        service worker: WebSocket transport to HyperHDR
+icons/               generated icon set
+tools/gen-icons.js   regenerates icons/ — no dependencies
+install.ps1          copies to a stable location, opens the extensions page
+PRIVACY.md           privacy policy (required for store submission)
+STORE.md             listing copy, permission justifications, checklist
+```
+
+## Publishing
+
+See `STORE.md`. It holds the listing text, the per-permission justifications the
+dashboards ask for, the data-usage answers, and the outstanding items.
+
+Two things to settle before submitting: `TARGET_INSTANCES` defaults to `[0, 1]`,
+which matches this repository's author rather than a general audience, and the
+listing still needs a screenshot.
+
+Edge Add-ons is the easier target — it is free, whereas Chrome charges a one-time
+$5 developer registration.
+
 ## Licence
 
 Same licence as HyperHDR.
+
+Not affiliated with or endorsed by the HyperHDR project.

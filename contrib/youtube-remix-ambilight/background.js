@@ -38,12 +38,12 @@ function connectOne(inst) {
     let j;
     try { j = JSON.parse(ev.data); } catch (e) { return; }
     if (j.command === "instance-switchTo") {
-      if (j.success) { c.ready = true; log("instance", inst, "san sang"); }
-      else console.error("[HyperHDR-BG] switchTo instance", inst, "that bai:", j.error);
+      if (j.success) { c.ready = true; log("instance", inst, "ready"); }
+      else console.error("[HyperHDR-BG] switchTo instance", inst, "failed:", j.error);
       return;
     }
     if (j.command === "image" && j.success === false) {
-      console.error("[HyperHDR-BG] instance", inst, "tu choi anh:", j.error);
+      console.error("[HyperHDR-BG] instance", inst, "rejected the image:", j.error);
     }
   };
 
@@ -80,7 +80,7 @@ function forwardFrame(b64) {
   }
   if (delivered === 0) connectAll();
   if (delivered > 0 && ++forwarded % 150 === 0) {
-    log("da chuyen", forwarded, "frame toi", delivered, "instance");
+    log("forwarded", forwarded, "frames to", delivered, "instance");
   }
 }
 
@@ -104,7 +104,7 @@ chrome.action.onClicked.addListener(async () => {
   const on = !(await getEnabled());
   await chrome.storage.local.set({ enabled: on });
   badge(on);
-  log(on ? "DA BAT" : "DA TAT");
+  log(on ? "ENABLED" : "DISABLED");
   if (on) connectAll();
   else closeAll(true);
 });

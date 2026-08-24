@@ -51,7 +51,7 @@ let lastReason = "";
 // Chi khi nguoi dung tu bam tat thi storage moi co enabled === false.
 chrome.storage.local.get("enabled").then((o) => {
   enabled = o.enabled !== false;
-  log("khoi dong, enabled =", enabled);
+  log("starting, enabled =", enabled);
 });
 chrome.storage.onChanged.addListener((ch, area) => {
   if (area === "local" && ch.enabled) {
@@ -71,10 +71,10 @@ function pickVideo() {
 
 function gate(v) {
   const title = (document.title || "").replace(/^\(\d+\)\s*/, "");
-  if (!REMIX.test(norm(title))) return "tieu de khong phai remix";
-  if (v.paused || v.ended) return "khong phat (pause/het bai)";
-  if (v.readyState < 2) return "chua du du lieu";
-  if (v.muted || v.volume === 0) return "video bi tat tieng";
+  if (!REMIX.test(norm(title))) return "title is not a remix";
+  if (v.paused || v.ended) return "not playing (paused or ended)";
+  if (v.readyState < 2) return "not enough data buffered";
+  if (v.muted || v.volume === 0) return "video is muted";
   return null;
 }
 
@@ -86,10 +86,10 @@ function tick() {
 
   const why = gate(v);
   if (why) {
-    if (why !== lastReason) { log("--- dang CHAN:", why); lastReason = why; }
+    if (why !== lastReason) { log("--- BLOCKED:", why); lastReason = why; }
     return;
   }
-  if (lastReason !== null && lastReason !== "") { log(">>> BAT den"); }
+  if (lastReason !== null && lastReason !== "") { log(">>> LEDs ON"); }
   lastReason = null;
 
   // tu gioi han nhip: rVFC va setInterval cung goi tick, cai nao khong bi
@@ -104,10 +104,10 @@ function tick() {
     const url = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
     chrome.runtime.sendMessage({ type: "frame", data: url.slice(url.indexOf(",") + 1) })
       .catch(() => {});   // service worker dang khoi dong lai -> bo qua frame nay
-    if (++sent % 150 === 0) log("da gui", sent, "frame");
+    if (++sent % 150 === 0) log("sent", sent, "frames");
   } catch (e) {
     tainted = true;
-    console.error("[HyperHDR-CS] canvas bi tainted, khong doc duoc pixel:", e.message);
+    console.error("[HyperHDR-CS] canvas is tainted, cannot read pixels:", e.message);
   }
 }
 
@@ -136,4 +136,4 @@ function pumpRVFC() {
 }
 pumpRVFC();
 
-log("san sang");
+log("ready");
