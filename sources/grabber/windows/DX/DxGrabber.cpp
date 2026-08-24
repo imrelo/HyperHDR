@@ -201,6 +201,8 @@ bool DxGrabber::init()
 		Info(_log, "Starting DX grabber. Selected: '{:s}' max width: {:d} ({:d}) @ {:d} fps", (foundDevice), _width, _height, _fps);
 		Info(_log, "*************************************************************************************************");
 
+		resolveSelectedMonitors(foundDevice);
+
 		if (initDirectX(foundDevice))
 		{
 			connect(this, &Grabber::SignalNewCapturedFrame, this, &DxGrabber::cacheHandler, Qt::UniqueConnection);
@@ -215,6 +217,56 @@ bool DxGrabber::init()
 void DxGrabber::getDevices()
 {
 	enumerateDevices(false);
+}
+
+void DxGrabber::resolveSelectedMonitors(const QString& selectedDeviceName)
+{
+	_selectedMonitors.clear();
+
+	if (_monitorOrder.isEmpty() || !selectedDeviceName.startsWith(MULTI_MONITOR + "|"))
+		return;
+
+	const QString adapter = selectedDeviceName.mid(MULTI_MONITOR.length() + 1);
+
+	for (const QString& monitor : _monitorOrder)
+	{
+		// tolerate entries that were saved without the adapter part
+		const QString candidate = (monitor.contains('|')) ? monitor : (monitor + "|" + adapter);
+
+		if (!candidate.endsWith("|" + adapter))
+			Warning(_log, "The selected display '{:s}' does not belong to the '{:s}' adapter and will be skipped", (candidate), (adapter));
+		else if (!_deviceProperties.contains(candidate))
+			Warning(_log, "The selected display '{:s}' is currently not available and will be skipped", (candidate));
+		else if (!_selectedMonitors.contains(candidate))
+			_selectedMonitors.append(candidate);
+	}
+
+	if (_selectedMonitors.isEmpty())
+		Warning(_log, "None of the selected displays is available. Falling back to capturing all of them.");
+	else
+	{
+		Info(_log, "Capturing {:d} user selected display(s): {:s}", static_cast<int>(_selectedMonitors.size()), (_selectedMonitors.join(", ")));
+
+		if (_reorderDisplays > 0)
+			Warning(_log, "The re-order display permutation is ignored because the displays are already selected in an explicit order");
+	}
+}
+
+void DxGrabber::applyMonitorOrder()
+{
+	if (_selectedMonitors.size() < 2 || _handles.size() < 2)
+		return;
+
+	_handles.sort([this](const std::unique_ptr<DisplayHandle>& a, const std::unique_ptr<DisplayHandle>& b)
+		{
+			return _selectedMonitors.indexOf(a->name) < _selectedMonitors.indexOf(b->name);
+		});
+
+	QStringList composition;
+	for (auto&& display : _handles)
+		composition.append(display->name);
+
+	Info(_log, "The displays are composed from left to right: {:s}", (composition.join(", ")));
 }
 
 void DxGrabber::enumerateDevices(bool /*silent*/)
@@ -328,6 +380,13 @@ bool DxGrabber::initDirectX(QString selectedDeviceName)
 			pOutput->GetDesc(&oDesc);
 
 			QString currentName = (QString::fromWCharArray(oDesc.DeviceName) + "|" + QString::fromWCharArray(pDesc.Description));
+
+			if (_multiMonitor && !_selectedMonitors.isEmpty() && !_selectedMonitors.contains(currentName))
+			{
+				Debug(_log, "Skipping the display '{:s}': it is not on the user's display list", (currentName));
+				SafeRelease(&pOutput);
+				continue;
+			}
 
 			exitNow = (currentName == selectedDeviceName) || _multiMonitor;
 
@@ -543,6 +602,10 @@ bool DxGrabber::initDirectX(QString selectedDeviceName)
 	if (!result && _handles.size() > 0)
 	{
 		uninit();
+	}
+	else if (result && _multiMonitor)
+	{
+		applyMonitorOrder();
 	}
 
 	return result;
@@ -778,6 +841,9 @@ void DxGrabber::grabFrame()
 		bool useCache = false;
 		std::list<std::pair<int, Image<ColorRgb>>> images;
 
+		// an explicit display selection already defines the composition order, so the blind permutations are not needed
+		const int reorderDisplays = (_selectedMonitors.isEmpty()) ? _reorderDisplays : 0;
+
 		for (auto&& display : _handles)
 		{
 			Image<ColorRgb> image;
@@ -797,7 +863,7 @@ void DxGrabber::grabFrame()
 			int targetSizeX = 0, targetSizeY = 0;
 			getTargetSystemFrameDimension(display->actualWidth, display->actualHeight, targetSizeX, targetSizeY);
 
-			if (_reorderDisplays > 0 && result == 0)
+			if (reorderDisplays > 0 && result == 0)
 			{
 				images.push_back(std::pair<int, Image<ColorRgb>>(width, Image<ColorRgb>(targetSizeX, 1)));
 			}
@@ -823,10 +889,10 @@ void DxGrabber::grabFrame()
 			memset(image.rawMem(), 0, image.size());
 		}
 
-		if (_reorderDisplays > 0)
+		if (reorderDisplays > 0)
 		{
 			for (int permutation = 0;
-					permutation < _reorderDisplays &&
+					permutation < reorderDisplays &&
 					std::next_permutation(images.begin(), images.end(),
 						[=](const std::pair<int, Image<ColorRgb>>& a, const std::pair<int, Image<ColorRgb>>& b)
 							{
@@ -843,7 +909,7 @@ void DxGrabber::grabFrame()
 		}
 
 		for (auto&& source : images)
-			if (_reorderDisplays == 0 || source.second.height() > 1)
+			if (reorderDisplays == 0 || source.second.height() > 1)
 			{
 				image.insertHorizontal(source.first, source.second);
 			}

@@ -124,6 +124,10 @@ private:
 
 	void enumerateDevices(bool silent);
 
+	void resolveSelectedMonitors(const QString& selectedDeviceName);
+
+	void applyMonitorOrder();
+
 	void loadLutFile(PixelFormat color = PixelFormat::NO_CHANGE, bool silent = false);
 
 	void getDevices();
@@ -141,6 +145,7 @@ private:
 	QTimer*					_timer;
 	QTimer*					_retryTimer;
 	bool					_multiMonitor;
+	QStringList				_selectedMonitors;
 
 	bool					_dxRestartNow;
 	std::list<std::unique_ptr<DisplayHandle>> _handles;

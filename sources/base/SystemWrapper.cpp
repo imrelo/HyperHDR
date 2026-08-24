@@ -165,6 +165,14 @@ void SystemWrapper::handleSettingsUpdate(settings::type type, const QJsonDocumen
 
 			_grabber->setReorderDisplays(obj["reorder_displays"].toInt(0));			
 
+			// user defined subset & order of the captured displays (multi-monitor mode only)
+			QStringList monitorOrder;
+			for (auto&& monitor : obj["monitorOrder"].toArray())
+			{
+				monitorOrder.append(monitor.toString());
+			}
+			_grabber->setMonitorOrder(monitorOrder);
+
 			_grabber->setSignalDetectionOffset(
 				obj["sDHOffsetMin"].toDouble(0.25),
 				obj["sDVOffsetMin"].toDouble(0.25),
