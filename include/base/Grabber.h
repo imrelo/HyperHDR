@@ -3,6 +3,7 @@
 #ifndef PCH_ENABLED
 	#include <QObject>
 	#include <QList>
+	#include <QStringList>
 	#include <QRectF>
 	#include <cstdint>
 	#include <QJsonObject>
@@ -87,6 +88,8 @@ public:
 	void setMonitorNits(int nits);
 
 	void setReorderDisplays(int order);
+
+	void setMonitorOrder(const QStringList& monitors);
 
 	void setFpsSoftwareDecimation(int decimation) override;
 
@@ -272,6 +275,7 @@ protected:
 	QString		_actualDeviceName;
 	uint		_targetMonitorNits;
 	int			_reorderDisplays;
+	QStringList	_monitorOrder;
 
 	int			_lineLength;
 	int			_frameByteSize;

@@ -1,3 +1,4 @@
+- Software screen capture: pick which monitors are captured and in which order they are stitched together in the multi-monitor mode - v22 🆕
 - Fix RGB splitting across E1.31 universes (#1585) - v22 🆕
 - Fix smoothing algorithm drift in long-running sessions (#1561) - v22 🆕
 - RGBW with Temporal Dithering - powered by Infinite Color Engine (#1483) - v22beta2 🆕

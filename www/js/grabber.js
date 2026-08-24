@@ -621,11 +621,55 @@ $(document).ready( function(){
 		window.schema.systemGrabber.properties.device.options = {};
 		window.schema.systemGrabber.properties.device.options.enum_titles = ["edt_conf_enum_automatic"];
 		
+		var singleDisplays = [];
+		var singleDisplayTitles = [];
+
 		for(var i = 0; i < window.serverInfo.systemGrabbers.modes.length; i++)
 		{
 			var name = (window.serverInfo.systemGrabbers.modes[i]).toString();			
 			window.schema.systemGrabber.properties.device.enum.push(name);
 			window.schema.systemGrabber.properties.device.options.enum_titles.push(name);
+
+			if (name.indexOf("MULTI-MONITOR|") != 0)
+			{
+				singleDisplays.push(name);
+				singleDisplayTitles.push(prettyDisplayName(name));
+			}
+		}
+
+		// keep the displays that are configured but currently unplugged/off on the list,
+		// otherwise the editor would silently drop them from the saved order
+		var savedMonitorOrder = (window.serverConfig.systemGrabber != null) ? window.serverConfig.systemGrabber.monitorOrder : null;
+
+		if (Array.isArray(savedMonitorOrder))
+		{
+			for(var i = 0; i < savedMonitorOrder.length; i++)
+			{
+				var savedName = (savedMonitorOrder[i]).toString();
+
+				if (savedName != "" && singleDisplays.indexOf(savedName) < 0)
+				{
+					singleDisplays.push(savedName);
+					singleDisplayTitles.push(prettyDisplayName(savedName) + " - " + $.i18n("edt_conf_monitor_order_unavailable"));
+				}
+			}
+		}
+
+		var monitorOrderSchema = window.schema.systemGrabber.properties.monitorOrder;
+
+		if (monitorOrderSchema != null && monitorOrderSchema.items != null)
+		{
+			if (singleDisplays.length > 0)
+			{
+				monitorOrderSchema.items.enum = singleDisplays;
+				monitorOrderSchema.items.options = { enum_titles: singleDisplayTitles };
+			}
+			else
+			{
+				// without a known display list fall back to a plain text entry
+				delete monitorOrderSchema.items.enum;
+				delete monitorOrderSchema.items.options;
+			}
 		}
 		
 		$('#conf_cont').append(createOptPanel('<svg data-src="svg/capturing_software.svg" fill="currentColor" class="svg4hyperhdr"></svg>', $.i18n("edt_conf_system_heading_title"), 'editor_container_system_device', 'btn_submit_systemGrabber'));
@@ -634,7 +678,8 @@ $(document).ready( function(){
 		$('#conf_cont').append(createOptPanel('<svg data-src="svg/capturing_software.svg" fill="currentColor" class="svg4hyperhdr"></svg>', $.i18n("edt_conf_system_control_heading_title"), 'editor_container_systemControl', 'btn_submit_systemControl'));
 		$('#conf_cont').append(createHelpTable(window.schema.systemControl.properties, $.i18n("edt_conf_system_control_heading_title")));			
 		
-		conf_system_section_editor = createJsonEditor('editor_container_system_device', { systemGrabber : window.schema.systemGrabber}, true, true);
+		// the last 'false' keeps the move up/down buttons of the display order list enabled
+		conf_system_section_editor = createJsonEditor('editor_container_system_device', { systemGrabber : window.schema.systemGrabber}, true, true, false);
 		conf_editor_systemControl = createJsonEditor('editor_container_systemControl', { systemControl: window.schema.systemControl}, true, true, undefined, true);
 
 		conf_editor_systemControl.on('change',function() {
@@ -665,6 +710,7 @@ $(document).ready( function(){
 				createHint("intro", $.i18n('conf_grabber_amlogic_intro'), "editor_container_system_device");			
 
 			$('[data-schemapath="root.systemGrabber.hdrToneMapping"]').toggle(false);
+			$('[data-schemapath="root.systemGrabber.monitorOrder"]').toggle(false);
 
 			if (window.serverInfo.systemGrabbers.device.indexOf("pipewire")<0)
 			{
@@ -682,7 +728,21 @@ $(document).ready( function(){
 			}
 		}
 		else
+		{
 			createHint("intro", $.i18n('conf_grabber_dx11_intro'), "editor_container_system_device");
+
+			// the display list only makes sense when all the outputs of an adapter are captured at once
+			function toggleMonitorOrder()
+			{
+				var currentDevice = conf_system_section_editor.getEditor('root.systemGrabber.device').getValue();
+				var multiMonitor = (currentDevice == "auto" || (currentDevice != null && currentDevice.toString().indexOf("MULTI-MONITOR|") == 0));
+
+				$('[data-schemapath="root.systemGrabber.monitorOrder"]').toggle(multiMonitor && singleDisplays.length > 1);
+			}
+
+			toggleMonitorOrder();
+			conf_system_section_editor.watch('root.systemGrabber.device', function() { toggleMonitorOrder(); });
+		}
 	}
 	
 	if (window.serverInfo.hasCEC != 1)
@@ -693,6 +753,23 @@ $(document).ready( function(){
 		$('[data-schemapath="root.systemControl.cecControl"]').toggle(false);
 	}
 	
+	function prettyDisplayName(fullName)
+	{
+		var separator = fullName.indexOf("|");
+
+		if (separator < 0)
+			return fullName;
+
+		// "\\.\DISPLAY1|Adapter name" is shown as "DISPLAY1 (Adapter name)"
+		var displayName = fullName.substring(0, separator);
+		var lastSeparator = displayName.lastIndexOf("\\");
+
+		if (lastSeparator >= 0)
+			displayName = displayName.substring(lastSeparator + 1);
+
+		return displayName + " (" + fullName.substring(separator + 1) + ")";
+	}
+
 	function checkExists(arr, newVal)
 	{
 		if (arr.includes(newVal))

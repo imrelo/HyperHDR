@@ -75,6 +75,7 @@ Grabber::Grabber(const QString& configurationPath, const QString& grabberName)
 	, _actualDeviceName("")
 	, _targetMonitorNits(200)
 	, _reorderDisplays(0)
+	, _monitorOrder()
 	, _lineLength(-1)
 	, _frameByteSize(-1)
 	, _signalDetectionEnabled(false)
@@ -202,6 +203,41 @@ void Grabber::setReorderDisplays(int order)
 		else
 		{
 			Info(_log, "Delayed restart of the grabber due to change of monitor display-order value");
+			_restartNeeded = true;
+		}
+	}
+}
+
+void Grabber::setMonitorOrder(const QStringList& monitors)
+{
+	QStringList cleaned;
+
+	for (const QString& monitor : monitors)
+	{
+		const QString trimmed = monitor.trimmed();
+
+		if (!trimmed.isEmpty() && !cleaned.contains(trimmed, Qt::CaseInsensitive))
+			cleaned.append(trimmed);
+	}
+
+	if (_monitorOrder != cleaned)
+	{
+		_monitorOrder = cleaned;
+
+		if (_monitorOrder.isEmpty())
+			Debug(_log, "The user's display selection is empty. All the displays will be captured in the default order.");
+		else
+			Debug(_log, "Set the user's display selection to: {:s}", (_monitorOrder.join(", ")));
+
+		if (_initialized && !_blocked)
+		{
+			Debug(_log, "Restarting video grabber");
+			uninit();
+			start();
+		}
+		else
+		{
+			Info(_log, "Delayed restart of the grabber due to change of the display selection");
 			_restartNeeded = true;
 		}
 	}
