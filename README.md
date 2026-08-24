@@ -1,91 +1,118 @@
-![C++20](https://img.shields.io/badge/Language-C%2B%2B20-blue) ![CMake](https://img.shields.io/badge/Build%20System-CMake-orange) ![MIT](https://img.shields.io/badge/License-MIT-brightgreen) ![Objective‑C++](https://img.shields.io/badge/Language-Objective‑C%2B%2B-lightblue) ![JavaScript](https://img.shields.io/badge/Language-JavaScript-teal) ![HTML](https://img.shields.io/badge/Language-HTML-orange) ![Linear Algebra](https://img.shields.io/badge/Linear%20Algebra-Vector%20Computations-maroon) ![JSON API](https://img.shields.io/badge/JSON%20API-supported-blue) ![Bootstrap 5](https://img.shields.io/badge/UI‑Framework-Bootstrap%205-purple) ![DirectX](https://img.shields.io/badge/DirectX-supported-lightblue) ![Wayland‑PipeWire](https://img.shields.io/badge/Wayland‑PipeWire-supported-teal) ![Sound Reactive](https://img.shields.io/badge/Sound-Reactive-brightgreen) ![MQTT](https://img.shields.io/badge/MQTT-supported-orange) ![mDNS‑Zeroconf](https://img.shields.io/badge/mDNS‑Zeroconf-supported-lightblue) ![USB Grabbers](https://img.shields.io/badge/USB%20Grabbers-enabled-blueviolet) ![Raspberry Pi ARM](https://img.shields.io/badge/Raspberry%20Pi‑ARM-64bit-brightgreen) ![x64](https://img.shields.io/badge/Architecture-x64-blue) ![ARM](https://img.shields.io/badge/Architecture-ARM-orange) ![WLED](https://img.shields.io/badge/WLED-supported-brightgreen) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-supported-orange) ![Adalight](https://img.shields.io/badge/Adalight-supported-purple)
+![MIT](https://img.shields.io/badge/License-MIT-brightgreen) ![C++20](https://img.shields.io/badge/Language-C%2B%2B20-blue) ![CMake](https://img.shields.io/badge/Build%20System-CMake-orange) ![DirectX](https://img.shields.io/badge/DirectX-supported-lightblue) ![Fork](https://img.shields.io/badge/status-personal%20fork-yellow)
 
-## About
+# HyperHDR — imrelo fork
 
-HyperHDR is an open-source ambient lighting system for TVs and music setups. It performs real-time analysis of video and audio streams to create immersive LED lighting. Designed with a strong focus on stability, high performance, and high-fidelity video decoding and mapping, HyperHDR delivers precise and vibrant LED visuals. Optimized for both single- and multi-threaded video processing, it runs seamlessly on **Windows**, **macOS** (x64 & arm64), and **Linux** (x64 & ARM, including Raspberry Pi).
+This is a personal fork of **[HyperHDR](https://github.com/awawa-dev/HyperHDR)**,
+an open-source ambient lighting system created and maintained by
+**[awawa-dev](https://github.com/awawa-dev)**.
 
-![v20](https://github.com/awawa-dev/HyperHDR/assets/69086569/9bc7999d-1515-4a96-ba5e-8a732cf7d8a4)
+Effectively all of the software is upstream's work. This fork adds the two
+things described below and changes nothing else. If you want HyperHDR itself,
+go to the upstream project — it is the one that is released, signed, packaged
+and supported.
 
-## Main Features of HyperHDR
+---
 
-At the heart of HyperHDR lies the **Infinite Color Engine** ( :new: HyperHDR v22), our own in-house rendering pipeline designed for maximum precision and visual fidelity. By leveraging floating-point processing, it produces smoother gradients, eliminates rounding artifacts, and ensures stable, consistent color transformations. While many other solutions rely on basic 24-bit color operations that introduce precision loss and visible banding, the Infinite Color Engine achieves uncompromised accuracy and professional-grade results. With deep-color support for Philips Hue, LIFX and HD108 devices, HyperHDR provides richer, more vibrant illumination than ever before.  
+## What this fork adds
 
-The Infinite Color Engine has also paved the way for our bespoke, internally developed RGB-to-RGBW conversion, featuring energy-preserving extraction, temperature-aware mapping, and temporal dithering with motion-adaptive diffusion and hysteresis to eliminate flickering.  
+> Both additions live on the branch
+> **[`imrelo/screen-capture-monitor-multiselect`](https://github.com/imrelo/HyperHDR/tree/imrelo/screen-capture-monitor-multiselect)**,
+> not on `master`. Apart from this README, `master` tracks upstream unchanged,
+> so merging in new upstream work stays as close to trivial as possible.
 
-### Key advantages of the Infinite Color Engine ( :new: HyperHDR v22):
-* **Floating-Point Precision:** All color computations use high-precision floating-point arithmetic, eliminating cumulative rounding errors for more accurate results
-* **Linear sRGB Accuracy:** Core color transformations are processed in linear sRGB space, ensuring physically correct and consistent light reproduction
-* **Deep-Color Support:** Compatible devices, including Philips Hue lamps, LIFX and HD108 LEDs, can take advantage of rendering beyond standard 24-bit RGB color depth
-* **Advanced Color Smoothing Algorithms:** Inertial-physics, exponential, and perceptually-uniform YUV/RGB interpolators for more fluid and natural color transitions
-* **High-precision RGB-to-RGBW conversion:** Energy-aware power balancing, white point temperature calibration, temporal dithering and anti-flicker hysteresis
+### 1. Pick and order the monitors the screen grabber captures
 
-### Additional features:
-* **Ultra-low CPU usage** on SoCs like Raspberry Pi or Intel N100  
-* **Lightweight design** with no heavy dependencies (e.g. no Python or Java)  
-* **Low-latency video processing** for LED strips and lamps  
-* **Optimized multithreading**, enabling Raspberry Pi to process high-quality video streams  
-* **High portability** across ARM-based embedded platforms  
-* **System diagnostics:** live CPU/RAM usage, CPU temperature, undervoltage detection, USB grabber and LED performance  
-* **USB grabber support** on Linux, Windows 10/11, and macOS for P010/NV12/YUYV/MJPEG/UYVY/I420/RGB   
-* **Hardware-accelerated capture:** PipeWire/Portal (Linux/Wayland), DirectX (Windows 10/11)  
-* **HDR-ready DirectX screen grabbing:** Supports DXGI_FORMAT_R16G16B16A16_FLOAT and multiple monitors 
-* **Optimized video processing:** Our pipeline smoothly handles 1080p **P010**/**NV12**/**YUYV** even on Rpi4
-* **Built-in audio visualization** powered by spectrum analysis  
-* **MQTT support** for IoT integration  
-* **Home Assistant and zigbee2mqtt integration**  
-* **Automatic tone mapping** for SDR/HDR content  
-* **Automatic LUT calibration** for optimal HDR/SDR grabber quality using MP4 test files  
-* **Latency benchmarking** for USB grabbers  
-* **P010 support** on Windows & Linux (our patched Raspberry Pi OS image - P010 is not supported in mainline OS)
-* **Intuitive LED strip editor**, with automatic or manual geometry editing via mouse and context menus  
-* **Smart signal detection** with adaptive learning for USB grabbers  
-* **External tone mapping support** for flatbuffers/protobuf sources  
-* **Wide LED strip compatibility** including WS281x, APA102, HD107, SK9822, SK6812 and our ultra-fast LED controllers:  
-  * [HyperSPI](https://github.com/awawa-dev/HyperSPI) for ESP8266/ESP32/RP2040  
-  * [HyperSerialEsp8266](https://github.com/awawa-dev/HyperSerialEsp8266), [HyperSerialESP32](https://github.com/awawa-dev/HyperSerialESP32), [HyperSerialPico](https://github.com/awawa-dev/HyperSerialPico) USB serial port 2Mb+ speed connection    
-  * :new: [Hyperk](https://github.com/awawa-dev/Hyperk): our optimized wireless LED controller for ESP8266/ESP32 (incl. S2/S3/C2/C3/C5/C6) and Raspberry Pi Pico W (RP2040/RP2350) family
+Upstream's software screen grabber captures either one display or every display
+at once, and its `reorder_displays` option only cycles blindly through
+permutations until one happens to look right.
 
-HyperHDR’s advanced video pipeline significantly enhances LED output, creating a smoother, more immersive ambient lighting experience. It works with SDR, HDR, and Dolby Vision (Low Latency Dolby Vision / LLDV only, if supported by your hardware). Instead of relying on USB grabbers, you can also use software screen capture directly from your PC.  
+This fork adds a **`monitorOrder`** setting to the system grabber, so you can:
 
-![example](https://github.com/awawa-dev/HyperHDR/assets/69086569/4077c05d-4c02-47eb-8d64-a334064403b3)
+* capture an arbitrary **subset** of your displays — for example only 1 and 3 out
+  of 3 — instead of all-or-one
+* put them in an **explicit order**, chosen from a list, rather than guessing at
+  permutations
+* keep a display in your saved order while it is unplugged; it is shown as
+  unavailable and skipped until it comes back
+
+When a selection is present the old blind `reorder_displays` permutation is
+ignored, and a log line says so, since the two would otherwise fight each other.
+
+Configure it under **Configuration → Software Screen Capture**, next to the
+device selector. It only appears in multi-monitor mode, since it means nothing
+otherwise.
+
+Implementation: `monitorOrder` in the grabber schema, plumbed through
+`Grabber` / `SystemWrapper`, and applied in `DxGrabber` where displays are
+enumerated and ordered.
+
+### 2. Remix Ambilight — a browser extension
+
+[`contrib/youtube-remix-ambilight/`](https://github.com/imrelo/HyperHDR/tree/imrelo/screen-capture-monitor-multiselect/contrib/youtube-remix-ambilight)
+
+A Manifest V3 extension that reads frames straight from YouTube's `<video>`
+element and pushes them into HyperHDR over the JSON-RPC `image` command — but
+only while a **remix track** is actually playing.
+
+* Lights follow the music in a **background tab**, so you can work in another
+  window without the video on screen
+* Gated on the track being a remix, genuinely playing, and not muted; pause it
+  and the LEDs release
+* Reads the video element rather than the screen, so YouTube's own interface
+  never reaches your lights
+* Asks for almost nothing: one `storage` permission, one localhost host
+  permission, and access to YouTube. No tab access, no screen capture, no
+  remote code
+
+See its [README](https://github.com/imrelo/HyperHDR/blob/imrelo/screen-capture-monitor-multiselect/contrib/youtube-remix-ambilight/README.md) for setup and for the
+reasoning behind the design.
+
+---
+
+## About HyperHDR
+
+HyperHDR analyses video and audio in real time to drive LED lighting for TVs and
+music setups, with a focus on stability, low CPU usage and high-fidelity colour.
+It runs on Windows, macOS (x64 and arm64) and Linux (x64 and ARM, including
+Raspberry Pi), supports USB grabbers and hardware-accelerated screen capture,
+handles SDR and HDR content with automatic tone mapping, and works with a wide
+range of LED hardware.
+
+For the full and current feature list, see the
+[upstream README](https://github.com/awawa-dev/HyperHDR#readme).
 
 ## Downloads
 
-**Official releases:**  
-[https://github.com/awawa-dev/HyperHDR/releases](https://github.com/awawa-dev/HyperHDR/releases)
+**This fork** has no releases. Builds come from GitHub Actions on this
+repository, and those installers are **not code-signed** — Windows SmartScreen
+will warn about them. Build them yourself, or take them from the Actions tab.
 
-Windows installers are code-signed by [SignPath Foundation](https://signpath.org). See our [Code Signing Policy](CODE_SIGNING_POLICY.md).
+**For official, signed releases, use upstream:**
+[github.com/awawa-dev/HyperHDR/releases](https://github.com/awawa-dev/HyperHDR/releases)
 
-**Official Linux repository:**  
-[https://awawa-dev.github.io/](https://awawa-dev.github.io/)
+Upstream also maintains a Linux repository at
+[awawa-dev.github.io](https://awawa-dev.github.io/).
 
-**Latest test builds** (GitHub Actions):  
-[View latest builds on master branch](https://github.com/awawa-dev/HyperHDR/actions?query=event:push+branch:master)
+## Documentation and support
 
-Login required → select the latest build from the **master** branch → download setups from the ZIP artifacts.
+Documentation and community support belong to the upstream project. Please do
+not take questions about HyperHDR itself to this fork.
 
-## Documentation
+* [Wiki](https://wiki.hyperhdr.eu/)
+* [Compiling from source](https://awawa-dev.github.io/wiki/Compiling-HyperHDR.html)
+* [Support forum](https://github.com/awawa-dev/HyperHDR/discussions)
 
-👉 [Explore Our Wiki](https://wiki.hyperhdr.eu/) 👈
+Issues with the two additions listed above are the exception — those belong here.
 
-## Community
+## Credits
 
-[HyperHDR Support Forum](https://github.com/awawa-dev/HyperHDR/discussions)
+HyperHDR is created and maintained by
+[awawa-dev](https://github.com/awawa-dev) and its contributors.
+Copyright © 2020-2026 awawa-dev. All credit for the software belongs to them.
 
-## How to Compile HyperHDR from Source
+## Licence
 
-[Compiling HyperHDR](https://awawa-dev.github.io/wiki/Compiling-HyperHDR.html)
+MIT, unchanged from upstream. See [LICENSE](LICENSE).
 
-## In the Press
-
-<img align="left" width="286" height="200" src="https://i.postimg.cc/zvr9rWR4/magazine.jpg"/>
-<a href="https://makezine.com/projects/bright-lights-big-tv-diy-ambient-lights/">Make: Magazine #84 (2023)</a><br>
-<a href="https://magpi.raspberrypi.com/issues/117">MagPi #117 (2022)</a><br>
-<a href="https://web.archive.org/web/20230824230034/https://www.smartprix.com/bytes/what-is-bias-lighting-philips-hue-ambient-light-vs-govee-dreamview-tv-backlight-vs-diy-ambient-light-with-hyperhdr/">Comparison of modern ambient lighting systems (2023)</a><br>
-<a href="https://www.raspberrypi.com/tutorials/raspberry-pi-tv-ambient-lighting">Tutorial on raspberrypi.com</a><br>
-<a href="https://www.youtube.com/watch?v=4jkwFsMkKwU">Building a 4K HDMI TV Backlight (2021)</a><br><br><br><br><br>
-
-## License
-
-Released under the MIT License  
-[![GitHub license](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/awawa-dev/HyperHDR/master/LICENSE)
+The MIT licence permits modification and redistribution provided the copyright
+notice and licence text are preserved, which they are.
